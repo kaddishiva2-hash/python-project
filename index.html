@@ -1,1 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
 
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 30px;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .output-box {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .output-box input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px 0 0 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .output-box button {
+            padding: 10px 15px;
+            border: none;
+            background: #00c6ff;
+            color: white;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .output-box button:hover {
+            background: #0072ff;
+        }
+
+        .settings {
+            margin-top: 15px;
+        }
+
+        .setting {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .generate-btn:hover {
+            opacity: 0.85;
+        }
+
+        .strength {
+            margin-top: 15px;
+        }
+
+        .bar {
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: 0.4s;
+        }
+
+        .weak { background: red; }
+        .medium { background: orange; }
+        .strong { background: limegreen; }
+
+        footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>🔐 Password Generator</h1>
+
+    <div class="output-box">
+        <input type="text" id="password" readonly>
+        <button onclick="copyPassword()">Copy</button>
+    </div>
+
+    <div class="settings">
+        <div class="setting">
+            <label>Password Length: <span id="lengthValue">12</span></label>
+        </div>
+        <input type="range" min="4" max="32" value="12" id="length">
+
+        <div class="setting">
+            <label>Include Uppercase</label>
+            <input type="checkbox" id="uppercase" checked>
+        </div>
+
+        <div class="setting">
+            <label>Include Lowercase</label>
+            <input type="checkbox" id="lowercase" checked>
+        </div>
+
+        <div class="setting">
+            <label>Include Numbers</label>
+            <input type="checkbox" id="numbers" checked>
+        </div>
+
+        <div class="setting">
+            <label>Include Symbols</label>
+            <input type="checkbox" id="symbols" checked>
+        </div>
+    </div>
+
+    <button class="generate-btn" onclick="generatePassword()">Generate Password</button>
+
+    <div class="strength">
+        <p>Password Strength</p>
+        <div class="bar">
+            <div id="strengthBar" class="bar-fill"></div>
+        </div>
+    </div>
+
+    <footer>Made for GitHub 🚀</footer>
+</div>
+
+<script>
+    const lengthSlider = document.getElementById("length");
+    const lengthValue = document.getElementById("lengthValue");
+
+    lengthSlider.addEventListener("input", () => {
+        lengthValue.textContent = lengthSlider.value;
+    });
+
+    function generatePassword() {
+        const length = lengthSlider.value;
+        const upper = document.getElementById("uppercase").checked;
+        const lower = document.getElementById("lowercase").checked;
+        const numbers = document.getElementById("numbers").checked;
+        const symbols = document.getElementById("symbols").checked;
+
+        const upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const lowerChars = "abcdefghijklmnopqrstuvwxyz";
+        const numberChars = "0123456789";
+        const symbolChars = "!@#$%^&*()_+{}[]<>?/";
+
+        let allChars = "";
+
+        if (upper) allChars += upperChars;
+        if (lower) allChars += lowerChars;
+        if (numbers) allChars += numberChars;
+        if (symbols) allChars += symbolChars;
+
+        if (allChars === "") {
+            alert("Please select at least one option!");
+            return;
+        }
+
+        let password = "";
+        for (let i = 0; i < length; i++) {
+            password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+        }
+
+        document.getElementById("password").value = password;
+        updateStrength(password);
+    }
+
+    function copyPassword() {
+        const passwordField = document.getElementById("password");
+        passwordField.select();
+        document.execCommand("copy");
+        alert("Password copied!");
+    }
+
+    function updateStrength(password) {
+        const bar = document.getElementById("strengthBar");
+        let strength = 0;
+
+        if (password.length > 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+        bar.className = "bar-fill";
+
+        if (strength <= 2) {
+            bar.style.width = "33%";
+            bar.classList.add("weak");
+        } else if (strength === 3) {
+            bar.style.width = "66%";
+            bar.classList.add("medium");
+        } else {
+            bar.style.width = "100%";
+            bar.classList.add("strong");
+        }
+    }
+</script>
+
+</body>
+</html>
